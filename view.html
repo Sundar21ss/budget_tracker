@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>View – Dhevar Jeyanthi</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background: #f4f9ff; }
+h1 { text-align: center; margin-bottom: 10px; color: #2c3e50; }
+.chart-container { width: 220px; height: 220px; margin: 0 auto 20px auto; background: #fff; border-radius: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); padding: 10px; }
+canvas { width: 100% !important; height: 100% !important; }
+.summary { display: flex; justify-content: space-around; margin: 10px 0 20px 0; }
+.summary div { padding: 12px; border-radius: 10px; width: 22%; text-align: center; font-weight: bold; color: white; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+#totalPromised { background: #3498db; }
+#totalPaid { background: #2ecc71; }
+#totalBalance { background: #f1c40f; color: #333; }
+#remaining { background: #e74c3c; }
+.container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.card { background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+h2 { color: #34495e; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+th { background: #9b59b6; color: white; }
+tr:nth-child(even) { background: #f9f9f9; }
+tr:nth-child(odd) { background: #e8f6f3; }
+td { color: #2c3e50; }
+.negative { color: red; font-weight: bold; }
+</style>
+</head>
+<body>
+<h1>View – Dhevar Jeyanthi</h1>
+<img src="Dhaver.jpg" alt="Dhevar Jeyanthi" style="display:block; margin:0 auto 20px auto; width:150px; height:150px; border-radius:50%; box-shadow:0 3px 8px rgba(0,0,0,0.1);">
+
+<div class="chart-container"><canvas id="creditsChart"></canvas></div>
+
+<div class="summary">
+  <div id="totalPromised">Promised: 0</div>
+  <div id="totalPaid">Paid: 0</div>
+  <div id="totalBalance">Balance: 0</div>
+  <div id="remaining">Remaining: 0</div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h2>Credits</h2>
+    <table id="creditsTable">
+      <thead>
+        <tr><th>Name</th><th>Promised</th><th>Paid</th><th>Balance</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Spends</h2>
+    <table id="spendsTable">
+      <thead>
+        <tr><th>Subject</th><th>Amount</th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const BIN_ID = "68cafa77ae596e708ff21e50"; // replace with your JSONBin bin ID
+const API_KEY = "34UlNCdIOuzT8VEuglyfTerB5W69uWDftCTCL5wR61ya3v7KLehN2"; // optional, needed if your bin is private
+
+let credits = [], spends = [];
+const creditsTable = document.querySelector("#creditsTable tbody");
+const spendsTable = document.querySelector("#spendsTable tbody");
+const ctxCredits = document.getElementById('creditsChart').getContext('2d');
+let creditsChart;
+
+// Fetch data from JSONBin
+async function loadData() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`);
+  const data = await res.json();
+  credits = data.record.credits || [];
+  spends = data.record.spends || [];
+  render();
+}
+
+// Render the table and chart
+function render() {
+  creditsTable.innerHTML = "";
+  spendsTable.innerHTML = "";
+  let totalPromised=0, totalPaid=0, totalBalance=0, totalSpends=0;
+
+  credits.forEach(c=>{
+    let bal = c.promised - c.paid;
+    totalPromised += c.promised;
+    totalPaid += c.paid;
+    totalBalance += bal;
+    creditsTable.innerHTML += `<tr>
+      <td>${c.name}</td><td>${c.promised}</td><td>${c.paid}</td>
+      <td class="${bal<0?'negative':''}">${bal}</td>
+    </tr>`;
+  });
+
+  spends.forEach(s=>{
+    totalSpends += s.amount;
+    spendsTable.innerHTML += `<tr>
+      <td>${s.subject}</td><td>${s.amount}</td>
+    </tr>`;
+  });
+
+  document.getElementById("totalPromised").innerText = "Promised: "+totalPromised;
+  document.getElementById("totalPaid").innerText = "Paid: "+totalPaid;
+  document.getElementById("totalBalance").innerText = "Balance: "+totalBalance;
+  document.getElementById("remaining").innerText = "Remaining: "+(totalPaid-totalSpends);
+
+  if(creditsChart) creditsChart.destroy();
+  creditsChart = new Chart(ctxCredits,{
+    type:'pie',
+    data:{
+      labels:['Promised','Paid','Balance'],
+      datasets:[{data:[totalPromised,totalPaid,totalBalance],backgroundColor:['#3498db','#2ecc71','#f1c40f'] }]
+    },
+    options:{plugins:{legend:{position:'bottom',labels:{color:'#2c3e50'}}}}
+  });
+}
+
+// Auto-refresh every 5 seconds to see live updates
+setInterval(loadData, 5000);
+loadData();
+</script>
+</body>
+</html>
