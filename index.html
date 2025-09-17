@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Welcome – Dhevar Jeyanthi</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: #f0f8ff;
+  }
+  h1 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  button {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    background-color: #2980b9;
+  }
+</style>
+</head>
+<body>
+
+<h1>Welcome to Dhevar Jeyanthi Dashboard</h1>
+<button onclick="goToView()">Go to View Page</button>
+
+<script>
+function goToView() {
+  window.location.href = "view.html";
+}
+</script>
+
+</body>
+</html>
